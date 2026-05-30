@@ -211,6 +211,38 @@ git commit -m "build: contract release manifest for version X.Y.Z"
 
 ---
 
+## Deployer Key Security
+
+### Never Commit Secrets
+
+Private keys, seed phrases, or any raw secret material **must never be committed** to the repository. The `.gitignore` already excludes `.env` and `.env.local` files. If you need to reference a deployer key in documentation or scripts, always use the Stellar CLI key name (e.g., `deployer`, `testnet-admin`) — never paste the raw secret key.
+
+### Use Stellar CLI Key Names
+
+Always manage deployer keys through the Stellar CLI key store:
+
+```bash
+# Generate a named key (stores encrypted on disk, never in the repo)
+stellar keys generate --global deployer --network testnet
+
+# Use the key name instead of a raw secret
+stellar keys address deployer             # get public key
+./scripts/contracts-release.sh deploy --network testnet --source deployer
+```
+
+The `--source deployer` argument (or `--source-account deployer`) tells the Stellar CLI to look up the key in its local key store. This avoids ever writing the raw secret into a command, script, or config file.
+
+### If a Key Is Exposed
+
+Treat any suspected key exposure as a security incident:
+
+1. **Revoke immediately** — rotate the exposed key using `stellar keys generate` with a new name and stop using the compromised key.
+2. **Check on-chain history** — review recent transactions from the compromised account for unauthorized activity.
+3. **Rotate in all services** — update any service that uses the exposed key (CI/CD secrets, vault entries, backend `.env` files).
+4. **Notify the team** — file an incident report and follow the [Contract Signer Key Rotation Runbook](contract-signer-rotation-runbook.md) for break-glass recovery if the key had admin or signer privileges.
+
+---
+
 ## Deployment Phase
 
 ### Step 1: Configure the Target Network
