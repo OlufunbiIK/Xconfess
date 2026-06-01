@@ -68,30 +68,10 @@ export const envValidationSchema = Joi.object({
   STELLAR_SOROBAN_RPC_URL: Joi.string()
     .uri()
     .default('https://soroban-rpc-testnet.stellar.org'),
-  CONFESSION_ANCHOR_CONTRACT_ID: Joi.when('STELLAR_FEATURES_ENABLED', {
-    is: 'true',
-    then: Joi.string().required().messages({
-      'any.required':
-        'CONFESSION_ANCHOR_CONTRACT_ID is required when STELLAR_FEATURES_ENABLED=true.',
-    }),
-    otherwise: Joi.string().optional(),
-  }),
-  REPUTATION_BADGES_CONTRACT_ID: Joi.when('STELLAR_FEATURES_ENABLED', {
-    is: 'true',
-    then: Joi.string().required().messages({
-      'any.required':
-        'REPUTATION_BADGES_CONTRACT_ID is required when STELLAR_FEATURES_ENABLED=true.',
-    }),
-    otherwise: Joi.string().optional(),
-  }),
-  TIPPING_SYSTEM_CONTRACT_ID: Joi.when('STELLAR_FEATURES_ENABLED', {
-    is: 'true',
-    then: Joi.string().required().messages({
-      'any.required':
-        'TIPPING_SYSTEM_CONTRACT_ID is required when STELLAR_FEATURES_ENABLED=true.',
-    }),
-    otherwise: Joi.string().optional(),
-  }),
+  DEPLOYMENT_METADATA_PATH: Joi.string().optional(),
+  CONFESSION_ANCHOR_CONTRACT_ID: Joi.string().optional(),
+  REPUTATION_BADGES_CONTRACT_ID: Joi.string().optional(),
+  TIPPING_SYSTEM_CONTRACT_ID: Joi.string().optional(),
   STELLAR_SERVER_SECRET: Joi.string().optional(),
 
   // ── Tipping SLA ────────────────────────────────────────────────────────

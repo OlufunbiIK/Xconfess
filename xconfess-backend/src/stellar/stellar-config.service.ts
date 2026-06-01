@@ -1,14 +1,15 @@
 // src/stellar/stellar-config.service.ts
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as StellarSDK from '@stellar/stellar-sdk';
 import {
   IStellarConfig,
   StellarNetwork,
 } from './interfaces/stellar-config.interface';
+import { DeploymentMetadataService } from './services/deployment-metadata.service';
 
 @Injectable()
-export class StellarConfigService {
+export class StellarConfigService implements OnModuleInit {
   private readonly logger = new Logger(StellarConfigService.name);
   private config: IStellarConfig & {
     maxFeeBudget: number;
@@ -17,8 +18,15 @@ export class StellarConfigService {
   };
   private server: StellarSDK.Horizon.Server;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private deploymentMetadataService: DeploymentMetadataService,
+  ) {
     this.initializeConfig();
+  }
+
+  onModuleInit(): void {
+    this.applyDeploymentMetadataFallback();
   }
 
   private initializeConfig() {
@@ -70,6 +78,40 @@ export class StellarConfigService {
     this.logger.log(
       `Fee budget: ${maxFeeBudget}, Backoff: ${feeBackoffMs}ms, Max retries: ${maxFeeRetries}`,
     );
+  }
+
+  private applyDeploymentMetadataFallback(): void {
+    const metadata = this.deploymentMetadataService.getMetadata();
+    if (!metadata) {
+      this.logger.warn(
+        'Deployment metadata not available for fallback contract IDs',
+      );
+    }
+
+    const fallbackIds = this.deploymentMetadataService.getAllContractIds();
+    this.config.contractIds = {
+      confessionAnchor:
+        this.config.contractIds.confessionAnchor || fallbackIds['confession-anchor'],
+      reputationBadges:
+        this.config.contractIds.reputationBadges || fallbackIds['reputation-badges'],
+      tippingSystem:
+        this.config.contractIds.tippingSystem || fallbackIds['anonymous-tipping'],
+    };
+
+    const featuresEnabled =
+      this.configService.get<string>('STELLAR_FEATURES_ENABLED') === 'true';
+    const missingContractIds = Object.entries(this.config.contractIds)
+      .filter(([, value]) => !value)
+      .map(([key]) => key);
+
+    if (featuresEnabled && missingContractIds.length > 0) {
+      throw new Error(
+        `Stellar features are enabled but missing contract IDs: ${missingContractIds.join(
+          ', ',
+        )}. Provide contract IDs through environment variables or deployment metadata.
+        `,
+      );
+    }
   }
 
   getConfig() {

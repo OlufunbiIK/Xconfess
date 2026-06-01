@@ -8,7 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiOkResponse, ApiParam } from '@nestjs/swagger';
 import { StellarConfigResponseDto } from './dto/stellar-config-response.dto';
 import { ConfigService } from '@nestjs/config';
 import * as StellarSDK from '@stellar/stellar-sdk';
@@ -51,6 +51,34 @@ export class StellarController {
   })
   getConfig(): StellarConfigResponseDto {
     return this.stellarService.getNetworkConfig();
+  }
+
+  @Get('anchor/verify/:confessionHash')
+  @ApiOperation({ summary: 'Verify a confession hash on the anchor contract' })
+  @ApiParam({
+    name: 'confessionHash',
+    description: 'Hex-encoded confession hash to verify on-chain',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Confession anchor verification result',
+    schema: {
+      example: {
+        isAnchored: true,
+        timestamp: 1684939200,
+      },
+    },
+  })
+  async verifyAnchor(@Param('confessionHash') confessionHash: string) {
+    if (!/^[0-9a-fA-F]{64}$/.test(confessionHash)) {
+      throw new BadRequestException('Invalid confession hash format. Expected 32-byte hex.');
+    }
+
+    const timestamp = await this.contractService.verifyConfession(confessionHash);
+    return {
+      isAnchored: timestamp !== null,
+      timestamp,
+    };
   }
 
   @Get('balance/:address')

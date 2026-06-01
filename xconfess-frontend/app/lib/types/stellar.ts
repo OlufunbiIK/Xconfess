@@ -8,9 +8,18 @@ export interface StellarContractIds {
   tippingSystem: string | null;
 }
 
+export interface DeploymentMetadataStatus {
+  loaded: boolean;
+  generatedAtUtc: string | null;
+  isStale: boolean;
+  ageDays: number | null;
+  loadError: string | null;
+}
+
 export interface StellarConfigResponse {
   network: string;
   horizonUrl: string;
   sorobanRpcUrl: string;
   contractIds: StellarContractIds;
+  deploymentMetadata: DeploymentMetadataStatus;
 }

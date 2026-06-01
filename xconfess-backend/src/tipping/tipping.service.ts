@@ -391,6 +391,15 @@ export class TippingService {
       });
 
       let savedTip: Tip;
+      const reconciliationMetadata = {
+        verifiedBy: 'user_request',
+        processedData: {
+          amount: processedData.amount,
+          senderAddress: processedData.senderAddress,
+        },
+        receiptMetadata: processedData.receiptMetadata,
+        idempotencyKey: idempotencyKey,
+      };
 
       if (existingTip) {
         // Update existing pending tip
@@ -402,14 +411,7 @@ export class TippingService {
         existingTip.verifiedAt = new Date();
         existingTip.lastChainStatus = 'verified';
         existingTip.lastCheckedAt = new Date();
-        existingTip.reconciliationMetadata = {
-          verifiedBy: 'user_request',
-          processedData: {
-            amount: processedData.amount,
-            senderAddress: processedData.senderAddress,
-          },
-          idempotencyKey: idempotencyKey,
-        };
+        existingTip.reconciliationMetadata = reconciliationMetadata;
         savedTip = await this.tipRepository.save(existingTip);
       } else {
         // Create new tip
@@ -424,14 +426,7 @@ export class TippingService {
           lastChainStatus: 'verified',
           lastCheckedAt: new Date(),
           retryCount: 0,
-          reconciliationMetadata: {
-            verifiedBy: 'user_request',
-            processedData: {
-              amount: processedData.amount,
-              senderAddress: processedData.senderAddress,
-            },
-            idempotencyKey: idempotencyKey,
-          },
+          reconciliationMetadata,
         });
         savedTip = await this.tipRepository.save(tip);
       }
@@ -484,9 +479,6 @@ export class TippingService {
       const senderAddress = receiptMetadata.anonymousSender
         ? null
         : paymentOp.from || null;
-
-      void receiptMetadata.settlementId;
-      void receiptMetadata.proofMetadata;
 
       return {
         amount,

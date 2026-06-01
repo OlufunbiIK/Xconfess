@@ -10,7 +10,7 @@ import { StellarConfigResponseDto } from './dto/stellar-config-response.dto';
 import { StellarInvokeContractGuard } from './guards/stellar-invoke-contract.guard';
 import { StellarConfigService } from './stellar-config.service';
 
-describe('StellarController GET /stellar/config', () => {
+describe('StellarController GET /stellar/config and anchor verification', () => {
   let app: INestApplication;
 
   const mockConfig: StellarConfigResponseDto = {
@@ -22,6 +22,13 @@ describe('StellarController GET /stellar/config', () => {
       reputationBadges: null,
       tippingSystem: 'CTIP456',
     },
+    deploymentMetadata: {
+      loaded: true,
+      generatedAtUtc: '2026-01-01T00:00:00Z',
+      isStale: false,
+      ageDays: 1,
+      loadError: null,
+    },
   };
 
   beforeAll(async () => {
@@ -32,7 +39,12 @@ describe('StellarController GET /stellar/config', () => {
           provide: StellarService,
           useValue: { getNetworkConfig: jest.fn().mockReturnValue(mockConfig) },
         },
-        { provide: ContractService, useValue: {} },
+        {
+          provide: ContractService,
+          useValue: {
+            verifyConfession: jest.fn().mockResolvedValue(1684939200),
+          },
+        },
         { provide: ConfigService, useValue: { get: jest.fn() } },
         { provide: AuditLogService, useValue: { log: jest.fn() } },
         {
@@ -63,5 +75,14 @@ describe('StellarController GET /stellar/config', () => {
     expect(res.body).not.toHaveProperty('STELLAR_SERVER_SECRET');
     expect(res.body.contractIds.reputationBadges).toBeNull();
     expect(res.body.contractIds.confessionAnchor).toBe('CANCHOR123');
+    expect(res.body.deploymentMetadata.loaded).toBe(true);
+  });
+
+  it('verifies a confession hash via the anchor contract', async () => {
+    const hash = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+    const res = await request(app.getHttpServer()).get(`/stellar/anchor/verify/${hash}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ isAnchored: true, timestamp: 1684939200 });
   });
 });

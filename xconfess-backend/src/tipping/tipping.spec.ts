@@ -116,6 +116,48 @@ describe('Tipping Service Tests with Seed Helpers', () => {
     });
   });
 
+  it('records anonymous sender metadata for tips with anonymous_sender=true in memo', async () => {
+    confessionRepository.findOne.mockResolvedValue({ id: 'confession-1' });
+    tipRepository.findOne.mockResolvedValue(null);
+    stellarService.verifyTransaction.mockResolvedValue(true);
+    const anonymousTxId = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        memo_type: 'text',
+        memo: JSON.stringify({
+          settlement_id: 'settlement-123',
+          proof_metadata: 'proof-abc',
+          anonymous_sender: true,
+        }),
+        _embedded: {
+          operations: [
+            {
+              type: 'payment',
+              asset_type: 'native',
+              amount: '1.0000000',
+              from: 'GFAKEFROMADDRESS1234567890EXAMPLE',
+            },
+          ],
+        },
+      }),
+    }) as any;
+
+    const result = await service.verifyAndRecordTip('confession-1', {
+      txId: anonymousTxId,
+    });
+
+    expect(result.tip.senderAddress).toBeNull();
+    expect(result.tip.reconciliationMetadata).toMatchObject({
+      receiptMetadata: {
+        settlementId: 'settlement-123',
+        proofMetadata: 'proof-abc',
+        anonymousSender: true,
+      },
+    });
+  });
+
   it('rejects invalid on-chain transactions', async () => {
     const invalidTip = TipFactory.buildInvalidTip('confession-1');
     confessionRepository.findOne.mockResolvedValue({ id: 'confession-1' });

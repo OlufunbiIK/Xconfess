@@ -23,6 +23,41 @@ export class StellarContractIdsDto {
   tippingSystem: string | null;
 }
 
+export class DeploymentMetadataStatusDto {
+  @ApiProperty({
+    description: 'True when deployment metadata was successfully loaded from disk',
+    example: true,
+  })
+  loaded: boolean;
+
+  @ApiProperty({
+    description: 'UTC timestamp from the deployment metadata file',
+    nullable: true,
+    example: '2026-05-21T12:34:56Z',
+  })
+  generatedAtUtc: string | null;
+
+  @ApiProperty({
+    description: 'Whether the deployment metadata is stale and should be refreshed',
+    example: false,
+  })
+  isStale: boolean;
+
+  @ApiProperty({
+    description: 'Days since the deployment metadata was generated',
+    nullable: true,
+    example: 7,
+  })
+  ageDays: number | null;
+
+  @ApiProperty({
+    description: 'Error message when deployment metadata could not be loaded',
+    nullable: true,
+    example: 'Deployment metadata file not found',
+  })
+  loadError: string | null;
+}
+
 /** Safe, public Stellar deployment summary for diagnostics (no secrets). */
 export class StellarConfigResponseDto {
   @ApiProperty({
@@ -46,4 +81,7 @@ export class StellarConfigResponseDto {
 
   @ApiProperty({ type: StellarContractIdsDto })
   contractIds: StellarContractIdsDto;
+
+  @ApiProperty({ type: DeploymentMetadataStatusDto })
+  deploymentMetadata: DeploymentMetadataStatusDto;
 }

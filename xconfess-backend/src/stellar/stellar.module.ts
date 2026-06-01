@@ -7,6 +7,7 @@ import { ContractService } from './contract.service';
 import { StellarController } from './stellar.controller';
 import { StellarInvokeContractGuard } from './guards/stellar-invoke-contract.guard';
 import { AuditLogModule } from '../audit-log/audit-log.module';
+import { DeploymentMetadataService } from './services/deployment-metadata.service';
 
 @Module({
   imports: [ConfigModule, AuditLogModule],
@@ -16,6 +17,7 @@ import { AuditLogModule } from '../audit-log/audit-log.module';
     StellarService,
     ContractService,
     StellarInvokeContractGuard,
+    DeploymentMetadataService,
   ],
   controllers: [StellarController],
   exports: [
@@ -23,6 +25,7 @@ import { AuditLogModule } from '../audit-log/audit-log.module';
     TransactionBuilderService,
     StellarService,
     ContractService,
+    DeploymentMetadataService,
   ],
 })
 export class StellarModule {}

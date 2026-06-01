@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as StellarSDK from '@stellar/stellar-sdk';
 import { StellarConfigService } from './stellar-config.service';
 import { TransactionBuilderService } from './transaction-builder.service';
+import { DeploymentMetadataService } from './services/deployment-metadata.service';
 import { ITransactionResult } from './interfaces/stellar-config.interface';
 import { StellarConfigResponseDto } from './dto/stellar-config-response.dto';
 import { AppException } from '../common/errors/app-exception';
@@ -27,6 +28,7 @@ export class StellarService {
     private readonly configService: ConfigService,
     private stellarConfig: StellarConfigService,
     private txBuilder: TransactionBuilderService,
+    private deploymentMetadataService: DeploymentMetadataService,
   ) {
     this.contractId = this.configService.get<string>(
       'CONFESSION_ANCHOR_CONTRACT',
@@ -114,6 +116,7 @@ export class StellarService {
    */
   getNetworkConfig(): StellarConfigResponseDto {
     const config = this.stellarConfig.getConfig();
+    const metadataFreshness = this.deploymentMetadataService.getMetadataFreshness();
     return {
       network: config.network,
       horizonUrl: config.horizonUrl,
@@ -122,6 +125,16 @@ export class StellarService {
         confessionAnchor: config.contractIds.confessionAnchor ?? null,
         reputationBadges: config.contractIds.reputationBadges ?? null,
         tippingSystem: config.contractIds.tippingSystem ?? null,
+      },
+      deploymentMetadata: {
+        loaded: !!this.deploymentMetadataService.getMetadata(),
+        generatedAtUtc: metadataFreshness.generatedAtUtc,
+        isStale: metadataFreshness.isStale,
+        ageDays:
+          metadataFreshness.daysSinceGeneration >= 0
+            ? metadataFreshness.daysSinceGeneration
+            : null,
+        loadError: this.deploymentMetadataService.getLoadError(),
       },
     };
   }

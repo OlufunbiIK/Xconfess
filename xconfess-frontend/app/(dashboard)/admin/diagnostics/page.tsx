@@ -81,6 +81,25 @@ export default function DiagnosticsPage() {
               <ConfigRow label="Tipping System" value={config.contractIds.tippingSystem} mono />
             </dl>
           </div>
+
+          {/* Deployment metadata */}
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Deployment metadata
+            </h3>
+            <dl className="divide-y divide-gray-100 dark:divide-gray-800">
+              <ConfigRow label="Loaded" value={config.deploymentMetadata.loaded ? 'Yes' : 'No'} />
+              <ConfigRow label="Generated at (UTC)" value={config.deploymentMetadata.generatedAtUtc} mono />
+              <ConfigRow label="Age (days)" value={config.deploymentMetadata.ageDays?.toString() ?? null} />
+              <ConfigRow label="Stale" value={config.deploymentMetadata.isStale ? 'Yes' : 'No'} />
+              <ConfigRow label="Load error" value={config.deploymentMetadata.loadError} mono />
+            </dl>
+            {config.deploymentMetadata.loadError && (
+              <div className="mt-4 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 p-3 text-sm text-red-700 dark:text-red-300">
+                {config.deploymentMetadata.loadError}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
