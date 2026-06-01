@@ -224,6 +224,11 @@ to:
 The hashes are generated inside `scripts/contracts-release.sh` by reading each
 built WASM artifact and computing `hashlib.sha256(content).hexdigest()`.
 
+Run `./scripts/test-contract-release-metadata.sh` when changing the deployment
+metadata shape. If fields move or are renamed, update that test's manifest
+assertions at the same time so missing artifacts and missing `sha256` values
+continue to fail with a clear contract name.
+
 ### Recompute A Hash Locally
 
 Run the release build first so the manifest and WASM files are from the same

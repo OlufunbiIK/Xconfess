@@ -35,6 +35,17 @@ export class WsJwtGuard implements CanActivate {
 
     try {
       const payload: any = await this.jwtService.verifyAsync(token);
+      if (!payload?.sub) {
+        this.logger.warn({
+          event: 'WS_AUTH_FAILURE',
+          reason: 'MISSING_SUBJECT',
+          socketId: client.id,
+          msg: 'Verified WS token did not contain a subject',
+        });
+        throw new UnauthorizedException(
+          'Invalid or expired authentication token',
+        );
+      }
 
       // Attach useful user info to the socket for downstream handlers
       client.data = client.data || {};

@@ -76,6 +76,19 @@ describe('ReactionsGateway fanout and reconnect unit coverage', () => {
     );
   });
 
+  it('reaction subscriptions never join private user rooms', () => {
+    const gateway = createGateway();
+    const client = createSocketClient('socket-public');
+
+    gateway.handleConnection(client);
+    gateway.handleSubscribeToConfession(client, {
+      confessionId: 'user:someone-else',
+    });
+
+    expect(client.join).toHaveBeenCalledWith('confession:user:someone-else');
+    expect(client.join).not.toHaveBeenCalledWith('user:someone-else');
+  });
+
   it('websocket adapter options keep reconnect-friendly transport and heartbeat defaults', () => {
     const options = buildWebSocketServerOptions('https://frontend.example');
 

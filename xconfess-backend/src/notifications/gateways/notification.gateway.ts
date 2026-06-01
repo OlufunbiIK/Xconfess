@@ -19,8 +19,8 @@ import { WebSocketLogger } from '../../websocket/websocket.logger';
 const USER_ROOM_PREFIX = 'user:';
 
 @WebSocketGateway({
-  cors: true,
   namespace: '/notifications',
+  transports: ['websocket', 'polling'],
 })
 @UseGuards(WsJwtGuard)
 export class NotificationGateway
@@ -39,11 +39,10 @@ export class NotificationGateway
   ) {}
 
   afterInit(server: Server) {
-    // Configure CORS dynamically from ConfigService
-    const frontendUrl = this.configService.get<string>(
-      'app.frontendUrl',
-      'http://localhost:3000',
-    );
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      this.configService.get<string>('app.frontendUrl') ||
+      'http://localhost:3000';
     if (server.engine?.opts) {
       server.engine.opts.cors = {
         origin: frontendUrl,

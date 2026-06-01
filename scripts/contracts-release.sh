@@ -3,9 +3,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CONTRACTS_DIR="$REPO_ROOT/xconfess-contracts"
-TARGET_DIR="$CONTRACTS_DIR/target/wasm32-unknown-unknown/release"
+REPO_ROOT="${XCONFESS_REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+CONTRACTS_DIR="${XCONFESS_CONTRACTS_DIR:-$REPO_ROOT/xconfess-contracts}"
+TARGET_DIR="${XCONFESS_TARGET_DIR:-$CONTRACTS_DIR/target/wasm32-unknown-unknown/release}"
+if [[ -z "${PYTHON_BIN:-}" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+  else
+    PYTHON_BIN="python"
+  fi
+fi
 
 CONTRACT_CRATES=(
   "confession-anchor"
@@ -52,7 +59,7 @@ write_manifest() {
   local generated_at
   generated_at="$(timestamp_utc)"
 
-  python - "$CONTRACTS_DIR" "$TARGET_DIR" "$output_file" "$generated_at" "${CONTRACT_CRATES[@]}" <<'PY'
+  "$PYTHON_BIN" - "$CONTRACTS_DIR" "$TARGET_DIR" "$output_file" "$generated_at" "${CONTRACT_CRATES[@]}" <<'PY'
 import hashlib
 import json
 import pathlib
@@ -142,7 +149,7 @@ deploy_all() {
   done
 
   local output_file="$REPO_ROOT/deployments/${network}.json"
-  python - "$CONTRACTS_DIR" "$TARGET_DIR" "$output_file" "$generated_at" "$network" "$source_key" "$ids_file" "${CONTRACT_CRATES[@]}" <<'PY'
+  "$PYTHON_BIN" - "$CONTRACTS_DIR" "$TARGET_DIR" "$output_file" "$generated_at" "$network" "$source_key" "$ids_file" "${CONTRACT_CRATES[@]}" <<'PY'
 import hashlib
 import json
 import pathlib
@@ -265,4 +272,6 @@ main() {
   esac
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

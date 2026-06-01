@@ -45,3 +45,20 @@ Playwright starts the Next.js dev server on port 3000 (see `playwright.config.ts
 ### CI
 
 Run the same command in your pipeline after `npm ci`. Full browser matrix tests live in other `tests/e2e` specs; smoke uses the `smoke` project (desktop Chromium only).
+
+## Wave 5 seeded demo journey
+
+`wave-demo-journey.spec.ts` exercises the demo path with mocked browser data:
+feed, confession detail, report submission, and admin analytics. It assumes an
+admin session returned by the mocked `/api/auth/session` route and does not
+require a running backend.
+
+Run it from `xconfess-frontend/`:
+
+```bash
+npx playwright test tests/e2e/wave-demo-journey.spec.ts --project=desktop
+```
+
+Failure screenshots, video, and traces use the defaults in `playwright.config.ts`
+and can be enabled with Playwright's usual `--trace on` flag when collecting
+demo evidence.

@@ -695,6 +695,52 @@ mod test {
     }
 
     #[test]
+    fn duplicate_update_nonce_is_rejected_and_state_is_unchanged() {
+        let (env, client, _admin, author) = setup();
+        let id = client.create_confession(&author, &sample_hash(&env, 42), &1_000);
+
+        assert_eq!(client.get_expected_nonce(&author), 1);
+        client
+            .try_update_status_seq(&author, &id, &ConfessionStatus::Flagged, &2_000, &1)
+            .unwrap()
+            .unwrap();
+        assert_eq!(client.get_expected_nonce(&author), 2);
+
+        let replay = client.try_update_status_seq(
+            &author,
+            &id,
+            &ConfessionStatus::Active,
+            &3_000,
+            &1,
+        );
+        assert!(replay.is_err());
+
+        let conf = client.get_confession(&id);
+        assert_eq!(conf.status, ConfessionStatus::Flagged);
+        assert_eq!(conf.updated_at, 2_000);
+        assert_eq!(client.get_expected_nonce(&author), 2);
+    }
+
+    #[test]
+    fn stale_delete_nonce_after_successful_update_is_rejected_without_state_change() {
+        let (env, client, _admin, author) = setup();
+        let id = client.create_confession(&author, &sample_hash(&env, 43), &1_000);
+
+        client
+            .try_update_status_seq(&author, &id, &ConfessionStatus::Flagged, &2_000, &1)
+            .unwrap()
+            .unwrap();
+
+        let stale_delete = client.try_delete_confession_seq(&author, &id, &3_000, &1);
+        assert!(stale_delete.is_err());
+
+        let conf = client.get_confession(&id);
+        assert_eq!(conf.status, ConfessionStatus::Flagged);
+        assert_eq!(conf.updated_at, 2_000);
+        assert_eq!(client.get_expected_nonce(&author), 2);
+    }
+
+    #[test]
     #[should_panic(expected = "unauthorized")]
     fn test_delete_by_unauthorized_user() {
         let (env, client, _admin, author) = setup();
