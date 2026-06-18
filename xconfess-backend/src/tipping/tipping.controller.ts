@@ -7,6 +7,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -64,8 +65,16 @@ export class TippingController {
   }
 
   @Post('verify')
+  @Throttle({ strict: {} })
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  @ApiOperation({ summary: 'Verify and record a Stellar XLM tip transaction' })
+  @ApiOperation({
+    summary: 'Verify and record a Stellar XLM tip transaction',
+    description:
+      'Rate limited separately from the global default — this route ' +
+      'hits Stellar Horizon to verify the transaction and is throttled ' +
+      'per IP+confession to protect against RPC cost spikes. See API ' +
+      'docs / runbook for limits.',
+  })
   @ApiParam({ name: 'id', description: 'Confession UUID' })
   @ApiBody({
     type: VerifyTipDto,
@@ -84,6 +93,7 @@ export class TippingController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid transaction ID or tip already recorded.' })
+  @ApiResponse({ status: 429, description: 'Too many verification requests for this confession. Retry after the window in the `Retry-After-strict` header.' })
   async verifyTip(
     @Param('id') confessionId: string,
     @Body() dto: VerifyTipDto,
