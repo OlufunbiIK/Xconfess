@@ -64,17 +64,17 @@ type ProfileSummary = {
 
 function ProfileSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
-      <div className="h-32 animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6" role="status" aria-label="Loading profile">
+      <div className="h-32 w-full animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
-            className="h-28 animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800"
+            className="h-28 w-full animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800"
           />
         ))}
       </div>
-      <div className="h-96 animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-96 w-full animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
     </div>
   );
 }

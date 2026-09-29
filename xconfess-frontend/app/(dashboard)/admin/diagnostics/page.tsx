@@ -46,11 +46,34 @@ function ConfigRow({
   );
 }
 
-function Skeleton() {
+function ServiceStatusSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 animate-pulse">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="h-28 w-full rounded-xl bg-gray-100 dark:bg-gray-800" />
+      ))}
+    </div>
+  );
+}
+
+function ObservabilitySkeleton() {
+  return (
+    <div className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 animate-pulse">
+      <div className="h-5 w-40 rounded bg-gray-200 dark:bg-gray-700 mb-4" />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-20 w-full rounded-xl bg-gray-100 dark:bg-gray-800" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StellarSkeleton() {
   return (
     <div className="animate-pulse space-y-3">
       {Array.from({ length: 2 }).map((_, i) => (
-        <div key={i} className="h-48 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+        <div key={i} className="h-48 w-full rounded-xl bg-gray-100 dark:bg-gray-800" />
       ))}
     </div>
   );
@@ -302,7 +325,7 @@ export default function DiagnosticsPage() {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
           Service Status
         </h3>
-        {healthLoading && <Skeleton />}
+        {healthLoading && <ServiceStatusSkeleton />}
         {healthError && (
           <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-4">
             <p className="text-sm text-red-700 dark:text-red-300">
@@ -343,7 +366,7 @@ export default function DiagnosticsPage() {
       </div>
 
       {/* Queue Metrics */}
-      {observabilityLoading && <Skeleton />}
+      {observabilityLoading && <ObservabilitySkeleton />}
       {observabilityError && (
         <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 p-4">
           <p className="text-sm text-red-700 dark:text-red-300">
@@ -432,7 +455,7 @@ export default function DiagnosticsPage() {
       )}
 
       {/* Stellar Diagnostics */}
-      {isLoading && <Skeleton />}
+      {isLoading && <StellarSkeleton />}
       {error && (
         <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-5 space-y-2">
           <p className="text-sm font-semibold text-red-800 dark:text-red-400">
