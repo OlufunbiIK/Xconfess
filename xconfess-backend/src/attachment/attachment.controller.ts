@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Post,
   Get,
@@ -6,18 +6,17 @@ import {
   Delete,
   Param,
   Body,
-  Query,
   Req,
   UseGuards,
-  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { OwnershipGuard } from '../common/guards/ownership.guard';
-import { Ownership } from '../common/decorators/ownership.decorator';
+import { AnonymousUserService } from '../user/anonymous-user.service';
 import { AttachmentCleanupService } from './attachment-cleanup.service';
+import { AttachmentIntegrityService } from './attachment-integrity.service';
 import { AttachmentRepository } from './repository/attachment.repository';
-import { Attachment, AttachmentStatus } from './entities/attachment.entity';
+import { AttachmentStatus } from './entities/attachment.entity';
+import { AttachmentResponseDto } from './dto/attachment-response.dto';
 import { CreateAttachmentDto, CompleteAttachmentDto, AssociateAttachmentDto } from './dto/attachment.dto';
 
 @ApiTags('Attachments')
@@ -27,6 +26,8 @@ export class AttachmentController {
   constructor(
     private readonly cleanupService: AttachmentCleanupService,
     private readonly attachmentRepository: AttachmentRepository,
+    private readonly integrityService: AttachmentIntegrityService,
+    private readonly anonymousUserService: AnonymousUserService,
   ) {}
 
   /**
@@ -37,9 +38,12 @@ export class AttachmentController {
   @ApiOperation({ summary: 'Create attachment record for upload' })
   @ApiResponse({ status: 201, description: 'Attachment record created' })
   async createAttachment(@Body() dto: CreateAttachmentDto, @Req() req: any) {
-    // Use the authenticated user's anonymous ID if not provided
-    const anonymousUserId = dto.anonymousUserId ?? (await this.getUserAnonymousId(req.user.sub));
-    
+    // KNOWN LIMITATION (out of scope for #2019): anonymousUserId here
+    // still falls back to a placeholder when not supplied on the DTO.
+    // Wiring this to AnonymousUserService.getOrCreateForUserSession is
+    // tracked separately from this issue.
+    const anonymousUserId = dto.anonymousUserId ?? (await this.getUserAnonymousId(req.user.id));
+
     const attachment = await this.cleanupService.createAttachment({
       ...dto,
       anonymousUserId,
@@ -50,17 +54,13 @@ export class AttachmentController {
 
   /**
    * PUT /attachments/:id/complete
-   * Mark an attachment as completed after successful upload.
    */
   @Put(':id/complete')
   @ApiOperation({ summary: 'Mark attachment as completed' })
   @ApiParam({ name: 'id', description: 'Attachment UUID' })
   @ApiResponse({ status: 200, description: 'Attachment marked as completed' })
   @ApiResponse({ status: 404, description: 'Attachment not found' })
-  async completeAttachment(
-    @Param('id') id: string,
-    @Body() dto: CompleteAttachmentDto,
-  ) {
+  async completeAttachment(@Param('id') id: string, @Body() dto: CompleteAttachmentDto) {
     const attachment = await this.attachmentRepository.findById(id);
     if (!attachment) {
       return { success: false, error: 'Attachment not found' };
@@ -72,17 +72,13 @@ export class AttachmentController {
 
   /**
    * PUT /attachments/:id/associate
-   * Associate an attachment with a confession or message after successful transaction.
    */
   @Put(':id/associate')
   @ApiOperation({ summary: 'Associate attachment with confession or message' })
   @ApiParam({ name: 'id', description: 'Attachment UUID' })
   @ApiResponse({ status: 200, description: 'Attachment associated successfully' })
   @ApiResponse({ status: 404, description: 'Attachment not found' })
-  async associateAttachment(
-    @Param('id') id: string,
-    @Body() dto: AssociateAttachmentDto,
-  ) {
+  async associateAttachment(@Param('id') id: string, @Body() dto: AssociateAttachmentDto) {
     const attachment = await this.attachmentRepository.findById(id);
     if (!attachment) {
       return { success: false, error: 'Attachment not found' };
@@ -98,24 +94,22 @@ export class AttachmentController {
 
   /**
    * GET /attachments/:id
-   * Get attachment details.
+   * Returns attachment details only to the owner, with storage
+   * identifiers stripped and record consistency verified. (#2019)
    */
   @Get(':id')
   @ApiOperation({ summary: 'Get attachment details' })
   @ApiParam({ name: 'id', description: 'Attachment UUID' })
-  @ApiResponse({ status: 200, description: 'Attachment details' })
-  @ApiResponse({ status: 404, description: 'Attachment not found' })
-  async getAttachment(@Param('id') id: string) {
+  @ApiResponse({ status: 200, description: 'Attachment details', type: AttachmentResponseDto })
+  @ApiResponse({ status: 404, description: 'Attachment unavailable' })
+  async getAttachment(@Param('id') id: string, @Req() req: any): Promise<AttachmentResponseDto> {
     const attachment = await this.attachmentRepository.findById(id);
-    if (!attachment) {
-      return { success: false, error: 'Attachment not found' };
-    }
-    return attachment;
+    const ownedAnonymousIds = await this.anonymousUserService.getAnonIdsForUser(req.user.id);
+    return this.integrityService.assertServableAndSanitize(attachment, ownedAnonymousIds);
   }
 
   /**
    * DELETE /attachments/:id
-   * Delete an attachment (only if not referenced).
    */
   @Delete(':id')
   @ApiOperation({ summary: 'Delete attachment if not referenced' })
@@ -130,7 +124,6 @@ export class AttachmentController {
 
   /**
    * POST /attachments/cleanup
-   * Manually trigger cleanup job (admin only).
    */
   @Post('cleanup')
   @ApiOperation({ summary: 'Trigger attachment cleanup job' })
@@ -142,7 +135,6 @@ export class AttachmentController {
 
   /**
    * GET /attachments/stats
-   * Get attachment statistics.
    */
   @Get('stats')
   @ApiOperation({ summary: 'Get attachment statistics' })
@@ -152,9 +144,7 @@ export class AttachmentController {
     const stats: Record<string, number> = {};
 
     for (const status of statuses) {
-      const count = await this.attachmentRepository.find({
-        where: { status },
-      });
+      const count = await this.attachmentRepository.find({ where: { status } });
       stats[status] = count.length;
     }
 
@@ -163,8 +153,7 @@ export class AttachmentController {
   }
 
   private async getUserAnonymousId(userId: number): Promise<string> {
-    // This would typically use the AnonymousUserService
-    // For now, we'll return a placeholder - the service should be injected
+    // Placeholder — see KNOWN LIMITATION note on createAttachment above.
     return `user-${userId}`;
   }
 }
