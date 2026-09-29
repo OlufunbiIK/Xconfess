@@ -5,6 +5,7 @@ import { Anchor, CheckCircle2, ExternalLink, Loader2, AlertCircle, Wallet, Rotat
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils/cn";
+import { focusVisible } from "@/app/lib/utils/focusStyles";
 import { useActivityStore } from "@/app/lib/store/activity.store";
 import { useStellarWallet } from "@/lib/hooks/useStellarWallet";
 import { getWalletCTAState } from "@/lib/hooks/useWalletCTAState";
@@ -208,7 +209,7 @@ export const AnchorButton: FC<AnchorButtonProps> = ({
             href={explorerUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+            className={cn("flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300", focusVisible)}
           >
             Check transaction
             <ExternalLink className="h-3 w-3" aria-hidden="true" />
@@ -265,7 +266,7 @@ export const AnchorButton: FC<AnchorButtonProps> = ({
       {isEmbeddedWallet && (
         <label className="block text-xs text-[var(--secondary)]">
           Wallet PIN
-          <input type="password" inputMode="numeric" value={walletPin} onChange={(event) => setWalletPin(event.target.value)} placeholder="Required to sign locally" aria-label="Wallet PIN for Stellar proof" className="mt-1 h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm text-[var(--foreground)]" />
+          <input type="password" inputMode="numeric" value={walletPin} onChange={(event) => setWalletPin(event.target.value)} placeholder="Required to sign locally" aria-label="Wallet PIN for Stellar proof" className={cn("mt-1 h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm text-[var(--foreground)]", focusVisible)} />
         </label>
       )}
       <Button
