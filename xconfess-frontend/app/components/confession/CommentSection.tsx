@@ -148,7 +148,16 @@ export function CommentSection({
         )}
 
         <div className="flex flex-col gap-1">
+          <label
+            htmlFor="comment-body"
+            className="sr-only"
+          >
+            {replyTo
+              ? `Reply to ${replyTo.author || 'Anonymous'}`
+              : 'Comment'}
+          </label>
           <textarea
+            id="comment-body"
             value={content}
             onChange={(event) => setContent(event.target.value)}
             placeholder={
@@ -158,7 +167,6 @@ export function CommentSection({
             rows={3}
             className="min-h-20 w-full min-w-0 resize-y rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-zinc-200 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
             maxLength={2000}
-            aria-label="Comment text"
             aria-describedby="char-count-info"
           />
         </div>
