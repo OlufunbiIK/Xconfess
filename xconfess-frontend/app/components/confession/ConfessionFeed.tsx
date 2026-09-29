@@ -89,6 +89,7 @@ const ConfessionFeedBody = ({
   // the user just left. Treat it as its own loading state, distinct from
   // both the initial load and "loading more" pagination.
   const isSwitchingFilter = isPlaceholderData && isFetching && !isFetchingNextPage;
+  const isPaginationLoading = isFetchingNextPage && !isSwitchingFilter;
 
   const announcement = useLiveAnnouncement({
     isLoading,
@@ -293,7 +294,7 @@ const ConfessionFeedBody = ({
       </div>
 
       {!preview && <div ref={loadMoreRef} className="flex justify-center py-6">
-        {isFetchingNextPage && (
+        {isPaginationLoading && (
           <div className="flex items-center gap-2 text-sm text-[var(--secondary)]">
             <svg
               className="h-4 w-4 animate-spin"
