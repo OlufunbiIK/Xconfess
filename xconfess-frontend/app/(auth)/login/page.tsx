@@ -10,6 +10,7 @@ import { useAuth } from '@/app/lib/hooks/useAuth';
 import { isSafeAuthRedirect } from '@/app/lib/utils/auth-redirect';
 import { extractRequestId } from '@/app/lib/utils/errorHandler';
 import { RequestIdNotice } from '@/app/components/auth/RequestIdNotice';
+import { InlineError } from '@/app/components/common/InlineError';
 import {
   validateLoginForm,
   parseLoginForm,
@@ -112,17 +113,10 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {errors.email && (
-              <div className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200">
-                {errors.email}
-              </div>
-            )}
-
-            {errors.password && !errors.email && (
-              <div className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200">
-                {errors.password}
-              </div>
-            )}
+            <InlineError
+              message={errors.email ?? errors.password}
+              className="mt-5"
+            />
 
             {errorRequestId && (errors.email || errors.password) && (
               <RequestIdNotice requestId={errorRequestId} />
