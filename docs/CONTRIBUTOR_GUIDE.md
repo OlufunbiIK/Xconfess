@@ -36,11 +36,11 @@ cp xconfess-frontend/.env.example xconfess-frontend/.env.local
 ```
 
 The example files are intentionally safe for local development. Do not commit
-`.env` or `.env.local`, and do not paste private keys, tokens, passwords, or
+.env` or .env.local`, and do not paste private keys, tokens, passwords, or
 production credentials into issues, pull requests, screenshots, or logs.
 
 For a faster local UI workflow, you may add this value to
-`xconfess-frontend/.env.local`:
+.xconfess-frontend/.env.local`:
 
 ```bash
 NEXT_PUBLIC_DEV_BYPASS_AUTH=true
@@ -131,7 +131,7 @@ npm run backend:migration:show
 
 This prints the list of all migrations and which ones have already run in the
 connected database. Check that it completes without TypeORM class-name errors
-before opening a migration-related PR.
+Before opening a migration-related PR.
 
 ### Run pending migrations (clean database)
 
@@ -168,6 +168,105 @@ GET http://localhost:5000/api/health/ready
 
 If the schema check is still failing, the response body includes `missingColumns`,
 `missingIndexes`, and a `hint` with the exact command to run.
+
+## Data Export Workflow
+
+This section documents the current data export feature and the responsibilities
+of the API, the queue, and the generated artifacts.
+
+### Request Lifecycle
+
+Data exports are asynchronous. A single request follows this path:
+
+1. **Create** — A client calls the export creation endpoint on the backend
+   API. The API validates the requested export type and filters, checks the
+   caller's authorization for the target data, and persists an export job
+   record with a `pending` status.
+2. **Enqueue** — The API enqueues the job on the export queue (Redis-backed
+)   with the job ID and the authorized scope. The API returns the job ID and
+   a status endpoint to the client immediately; it does not wait for the
+   export to finish.
+3. **Process** — A queue worker consumes the job, re-checks authorization,
+   queries the data within the job's scope, and writes the result to a generated
+   artifact. The worker updates the job to `completed` or `failed` with an
+   error message.
+4. **Retrieve** — The client polls the status endpoint. Once the job is
+   `completed`, the API serves a download link or stream for the generated
+   artifact, gated by the same authorization checks.
+5. **Expire** — Generated artifacts and their job records are retained for a
+   bounded window and then cleaned up by the export cleanup job.
+
+### Responsibilities
+
+- **API** — Authenticates the caller, authorizes the requested scope,
+  validates filters, creates the job record, enqueues the job, and serves status
+  and download responses. The API must never bypass authorization checks on
+  download.
+- **Queue** — Owns job dispatch, retries, and failure handling. Workers must be
+  idempotent and must re-validate the job's scope before writing any data.
+  Failed jobs must record an error message that is safe to return to the
+  client.
+- **Generated artifacts** — Export files are written to the configured
+  export storage location and are named by job ID. Artifacts must not be
+  committed to the repository and must not be shared in issues or pull requests.
+
+### Local Testing
+
+Run the backend and the Docker services from the repository root, then exercise
+the export flow end to end:
+
+1. Start infrastructure and the backend:
+
+   ```bash
+   docker compose -f compose.yaml up -d
+   npm run dev:backend
+   ```
+
+2. Create an export job through the API with a valid auth token and the
+   export type you are testing. Record the returned job ID.
+
+3. Poll the status endpoint until the job reaches `completed` or `failed`.
+   Confirm the status transitions from `pending` to a resolved state.
+
+4. Download the artifact and verify the contents match the requested scope
+   and filters.
+
+5. Run the relevant automated checks before opening a pull request:
+
+   ```bash
+   npm run backend:lint
+   npm run backend:test
+   ```
+
+Tests that cover exports should assert the job lifecycle, authorization
+enforcement, and artifact content. Use seeded or synthetic data only; never use
+real user data in local tests or fixtures.
+
+### Cleanup Expectations
+
+- Export job records and generated artifacts are retained only for the
+  configured retention window.
+- The export cleanup job removes expired artifacts from storage and marks the
+  corresponding job records as expired. Contributors must not disable or shorten
+  this cleanup without maintainer approval.
+- Local developers should delete any export artifacts they generate during
+  testing once they are done, and must not commit them to the repository.
+- Any change to retention or cleanup behavior must include tests covering
+  expiration and must be called out in the pull request body.
+
+### Privacy-Safe Handling
+
+- Exports contain user data. Treat every generated artifact as sensitive.
+- Do not attach export files, export logs, or job payloads to issues or pull
+  requests. If you must share a sample, redact identifying fields and use
+  synthetic data.
+- Never log raw export contents, auth tokens, or personal data. Log only the
+  job ID, status, and non-identifying error codes.
+- Enforce authorization on every status and download request; do not rely on
+  job ID secrecy for access control.
+- Follow the redaction rules in
+  [Attaching logs to issues and PRs](LOG_ATTACHING_GUIDE.md) when sharing
+  any export-related output.
 
 ## Pull Request Checklist
 
