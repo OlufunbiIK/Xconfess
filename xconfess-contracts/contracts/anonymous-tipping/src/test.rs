@@ -89,6 +89,31 @@ fn get_tip_balance_returns_cumulative_total() {
 }
 
 #[test]
+fn invalid_tip_amounts_do_not_affect_valid_tips() {
+    let (env, client, token_id) = setup();
+    let token = TestTokenClient::new(&env, &token_id);
+    let sender = Address::generate(&env);
+    let recipient = Address::generate(&env);
+
+    token.mint(&sender, &1);
+
+    for amount in [0_i128, -1_i128, AnonymousTipping::MAX_TIP_AMOUNT + 1] {
+        assert_eq!(
+            client.try_send_tip(&sender, &recipient, &amount),
+            Err(Ok(Error::InvalidTipAmount))
+        );
+    }
+
+    assert_eq!(token.balance(&sender), 1);
+    assert_eq!(client.get_tip_balance(&recipient), 0);
+
+    let settlement_id = client.send_tip(&sender, &recipient, &1);
+    assert_eq!(settlement_id, 1);
+    assert_eq!(token.balance(&sender), 0);
+    assert_eq!(client.get_tip_balance(&recipient), 1);
+}
+
+#[test]
 fn non_positive_amounts_return_contract_error() {
     let (env, client, _token_id) = setup();
     let sender = Address::generate(&env);
