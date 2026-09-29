@@ -720,8 +720,8 @@ export default function MessagesPage() {
                   </div>
                 )}
               </ScrollArea>
-              <div className="p-3 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
-                <div className="flex gap-2">
+              <div className="p-2 sm:p-3 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <Input
                     ref={inputRef}
                     placeholder={selectedThread.isAuthor ? 'Type an encrypted reply...' : 'Send encrypted message...'}
@@ -729,9 +729,9 @@ export default function MessagesPage() {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                     disabled={isSending || !e2eReady}
-                    className="flex-1 text-sm"
+                    className="min-w-0 flex-1 text-sm"
                   />
-                  <Button onClick={handleSendMessage} disabled={isSending || !newMessage.trim() || !e2eReady} size="sm">
+                  <Button className="shrink-0" onClick={handleSendMessage} disabled={isSending || !newMessage.trim() || !e2eReady} size="sm">
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
@@ -940,17 +940,17 @@ export default function MessagesPage() {
                   )}
                 </ScrollArea>
 
-                <div className="p-4 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
-                  <div className="flex gap-2">
+                <div className="p-3 sm:p-4 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                     <Input
                       placeholder={selectedThread.isAuthor ? 'Type an encrypted reply...' : 'Send encrypted message...'}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                       disabled={isSending || !e2eReady}
-                      className="flex-1"
+                      className="min-w-0 flex-1"
                     />
-                    <Button onClick={handleSendMessage} disabled={isSending || !newMessage.trim() || !e2eReady}>
+                    <Button className="shrink-0" onClick={handleSendMessage} disabled={isSending || !newMessage.trim() || !e2eReady}>
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>
