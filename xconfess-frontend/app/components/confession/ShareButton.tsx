@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Share2, Copy, Check, Mail } from "lucide-react";
 import { cn } from "@/app/lib/utils/cn";
+import { focusVisible } from "@/app/lib/utils/focusStyles";
 
 interface ShareButtonProps {
   confessionId: string;
@@ -106,7 +107,7 @@ export function ShareButton({
               <button
                 type="button"
                 onClick={copyLink}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                className={cn("flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800", focusVisible)}
                 role="menuitem"
                 title="Copy confession link to clipboard"
               >
@@ -121,7 +122,7 @@ export function ShareButton({
                 <button
                   type="button"
                   onClick={shareNative}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                  className={cn("flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800", focusVisible)}
                   role="menuitem"
                   title="Share using native app"
                 >
@@ -132,7 +133,7 @@ export function ShareButton({
               <button
                 type="button"
                 onClick={shareToTwitter}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                className={cn("flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800", focusVisible)}
                 role="menuitem"
                 title="Share to X (formerly Twitter)"
               >
@@ -141,7 +142,7 @@ export function ShareButton({
               <button
                 type="button"
                 onClick={shareViaEmail}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                className={cn("flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800", focusVisible)}
                 role="menuitem"
                 title="Send via email"
               >

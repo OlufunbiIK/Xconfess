@@ -29,6 +29,8 @@ import { CommentSection } from "@/app/components/confession/CommentSection";
 import { RelatedConfessions } from "@/app/components/confession/RelatedConfessions";
 import { formatDate } from "@/app/lib/utils/formatDate";
 import { sanitizeMarkdown } from "@/app/lib/utils/markdown";
+import { cn } from "@/app/lib/utils/cn";
+import { focusVisible } from "@/app/lib/utils/focusStyles";
 import { queryKeys } from "@/app/lib/api/queryKeys";
 import { useAuth } from "@/app/lib/hooks/useAuth";
 import { getConfessionById } from "@/app/lib/api/confessions";
@@ -294,7 +296,10 @@ export function ConfessionDetailClient({
             <li>
               <Link
                 href="/"
-                className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                className={cn(
+                  "text-zinc-500 hover:text-zinc-300 transition-colors",
+                  focusVisible,
+                )}
               >
                 Feed
               </Link>

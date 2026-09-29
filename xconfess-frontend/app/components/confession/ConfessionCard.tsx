@@ -4,6 +4,8 @@ import { memo, useEffect, useState } from "react";
 import Image from "next/image";
 import { Clock3, Eye, MessageSquare, ShieldAlert, Sparkles } from "lucide-react";
 import { ScrollRestorationLink } from "@/app/components/common/ScrollRestorationLink";
+import { cn } from "@/app/lib/utils/cn";
+import { focusVisible } from "@/app/lib/utils/focusStyles";
 import { ReactionButton } from "./ReactionButtons";
 import { AnchorButton } from "./AnchorButton";
 import { TipButton } from "./TipButton";
@@ -74,12 +76,12 @@ export const ConfessionCard = memo(({ confession }: Props) => {
             <div>
               <p className="font-semibold text-[var(--foreground)]">Content warning</p>
               <p className="mt-1 text-sm leading-6 text-[var(--secondary)]">This confession may contain sensitive material. You choose whether to view it.</p>
-              <button type="button" onClick={() => setShowWarnedContent(true)} className="mt-4 rounded-xl border border-amber-500/40 px-3.5 py-2 text-sm font-semibold text-[var(--foreground)] transition-colors hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]">Show confession</button>
+              <button type="button" onClick={() => setShowWarnedContent(true)} className={cn("mt-4 rounded-xl border border-amber-500/40 px-3.5 py-2 text-sm font-semibold text-[var(--foreground)] transition-colors hover:bg-amber-500/15", focusVisible)}>Show confession</button>
             </div>
           </div>
         </div>
       ) : (
-        <ScrollRestorationLink href={"/confessions/" + confession.id} className="group block py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]" aria-label={"Read full confession: " + confession.content.slice(0, 80) + "..."}>
+        <ScrollRestorationLink href={"/confessions/" + confession.id} className={cn("group block py-7", focusVisible)} aria-label={"Read full confession: " + confession.content.slice(0, 80) + "..."}>
           <p className="max-w-2xl font-editorial text-[1.6rem] leading-[1.35] text-[var(--foreground)] transition-colors group-hover:text-[var(--primary-deep)] sm:text-[2rem]">{confession.content}</p>
         </ScrollRestorationLink>
       )}
@@ -87,7 +89,7 @@ export const ConfessionCard = memo(({ confession }: Props) => {
       <footer className="flex flex-col gap-4 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-xs text-[var(--secondary)]">
           {confession.viewCount !== undefined && <div className="flex min-h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3" aria-label={confession.viewCount + " views"}><Eye className="h-3.5 w-3.5" aria-hidden="true" /><span>{confession.viewCount}</span></div>}
-          {confession.commentCount !== undefined && <ScrollRestorationLink href={"/confessions/" + confession.id + "#comments"} className="flex min-h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 transition-colors hover:text-[var(--foreground)]" aria-label={"View " + confession.commentCount + " comments"}><MessageSquare className="h-3.5 w-3.5" aria-hidden="true" /><span>{confession.commentCount}</span></ScrollRestorationLink>}
+          {confession.commentCount !== undefined && <ScrollRestorationLink href={"/confessions/" + confession.id + "#comments"} className={cn("flex min-h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 transition-colors hover:text-[var(--foreground)]", focusVisible)} aria-label={"View " + confession.commentCount + " comments"}><MessageSquare className="h-3.5 w-3.5" aria-hidden="true" /><span>{confession.commentCount}</span></ScrollRestorationLink>}
           {isAnchored && <span className="hidden items-center gap-1 rounded-xl bg-[var(--accent-soft)] px-3 py-2 text-[var(--primary-deep)] sm:flex"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />Anchored</span>}
         </div>
         <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
