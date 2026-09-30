@@ -23,11 +23,11 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 
   if (circle) {
     return (
-      <div className={`flex gap-4 ${className}`}>
+      <div role="status" aria-label="Loading" className={`flex gap-4 ${className}`}>
         {items.map((_, i) => (
           <div
             key={i}
-            className={`${height} ${height === 'h-4' ? 'w-4' : height.replace('h-', 'w-')} bg-zinc-700 rounded-full animate-pulse`}
+            className={`${height} ${height.replace(/^h-/, 'w-')} bg-zinc-700 rounded-full animate-pulse`}
           />
         ))}
       </div>
@@ -35,7 +35,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   }
 
   return (
-    <div className={className}>
+    <div role="status" aria-label="Loading" className={className}>
       {items.map((_, i) => (
         <div key={i} className="space-y-3 mb-6">
           {Array.from({ length: lines }).map((_, lineIndex) => (
@@ -58,14 +58,14 @@ export const CardSkeleton: React.FC<{ count?: number }> = ({ count = 1 }) => {
   const items = Array.from({ length: count });
 
   return (
-    <div className="space-y-4">
+    <div role="status" aria-label="Loading" className="space-y-4">
       {items.map((_, i) => (
         <div
           key={i}
-          className="bg-zinc-800 rounded-lg p-6 space-y-4 animate-pulse"
+          className="min-h-[8rem] bg-zinc-800 rounded-lg p-6 space-y-4 animate-pulse"
         >
           <div className="h-6 bg-zinc-700 rounded w-2/3" />
-          <div className="space-y-2">
+          <div role="status" aria-label="Loading" className="space-y-2">
             <div className="h-4 bg-zinc-700 rounded" />
             <div className="h-4 bg-zinc-700 rounded w-5/6" />
           </div>
@@ -84,7 +84,7 @@ export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({
   cols = 4,
 }) => {
   return (
-    <div className="space-y-2">
+    <div role="status" aria-label="Loading" className="space-y-2">
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="flex gap-4">
           {Array.from({ length: cols }).map((_, j) => (
