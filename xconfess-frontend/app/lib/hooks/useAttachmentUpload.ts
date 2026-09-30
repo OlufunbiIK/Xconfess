@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { validateAttachment } from "../utils/attachmentValidation";
 
 // NOTE: `/api/attachments/upload` is a placeholder endpoint — there is no
 // attachments backend yet. Swap this for the real endpoint once it exists.
@@ -14,6 +15,8 @@ export interface PendingUpload {
   status: UploadStatus;
   progress: number;
   error?: string;
+  /** True when client-side validation rejected the file; it was never sent. */
+  rejected?: boolean;
 }
 
 function createId() {
@@ -39,6 +42,19 @@ export function useAttachmentUpload() {
   }, []);
 
   const startUpload = useCallback((id: string, file: File) => {
+    // Client-side pre-check for fast feedback. This is a UX convenience only:
+    // the backend re-validates every upload and remains the security boundary.
+    const validation = validateAttachment(file);
+    if (!validation.valid) {
+      updateUpload(id, {
+        status: "error",
+        progress: 0,
+        rejected: true,
+        error: validation.errors.map((e) => e.message).join(" "),
+      });
+      return;
+    }
+
     const xhr = new XMLHttpRequest();
     xhrsRef.current.set(id, xhr);
 
