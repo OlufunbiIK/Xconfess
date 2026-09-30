@@ -370,8 +370,8 @@ export const TipButton = ({ confessionId, recipientAddress, initialStats }: TipB
                 {getTipAmountValidationError(tipAmount) ?? `Enter amount in ${TIP_UNIT} with ${TIP_STEP} precision. Minimum ${MIN_TIP_AMOUNT} ${TIP_UNIT}.`}
               </p>
               {wallet.publicKey && (
-                <label className="mt-3 block text-left text-xs text-zinc-400">Wallet PIN
-                  <input type="password" inputMode="numeric" value={walletPin} onChange={(e) => setWalletPin(e.target.value)} placeholder="Required to sign locally" className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-white" aria-label="Wallet PIN for tip" />
+                <label htmlFor="tip-wallet-pin" className="mt-3 block text-left text-xs text-zinc-400">Wallet PIN
+                  <input id="tip-wallet-pin" type="password" inputMode="numeric" value={walletPin} onChange={(e) => setWalletPin(e.target.value)} placeholder="Required to sign locally" className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-white" />
                 </label>
               )}
               <button

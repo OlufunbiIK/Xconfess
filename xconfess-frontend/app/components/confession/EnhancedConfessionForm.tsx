@@ -536,9 +536,20 @@ export const EnhancedConfessionForm: React.FC<EnhancedConfessionFormProps> = ({
 
           <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                         {enableStellarAnchor && isEmbeddedWallet && (
-              <label className="mt-4 block text-sm text-[var(--secondary)]">
+              <label
+                htmlFor="confession-wallet-pin"
+                className="mt-4 block text-sm text-[var(--secondary)]"
+              >
                 Wallet PIN for local Stellar proof signing
-                <input type="password" inputMode="numeric" value={stellarWalletPin} onChange={(event) => setStellarWalletPin(event.target.value)} placeholder="Required to sign locally" aria-label="Wallet PIN for Stellar proof" className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm text-[var(--foreground)]" />
+                <input
+                  id="confession-wallet-pin"
+                  type="password"
+                  inputMode="numeric"
+                  value={stellarWalletPin}
+                  onChange={(event) => setStellarWalletPin(event.target.value)}
+                  placeholder="Required to sign locally"
+                  className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm text-[var(--foreground)]"
+                />
               </label>
             )}
 
