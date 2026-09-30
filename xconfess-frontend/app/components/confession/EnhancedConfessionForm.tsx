@@ -31,6 +31,7 @@ import { useGlobalToast } from "@/app/components/common/Toast";
 import { clearPendingConfession, loadPendingConfession } from "@/app/lib/utils/pendingConfession";
 import { clearSessionDraft, loadSessionDraft, saveSessionDraft } from "@/app/lib/utils/sessionDraft";
 import { useAuth } from "@/app/lib/hooks/useAuth";
+import { InlineError } from "@/app/components/common/InlineError";
 
 
 interface EnhancedConfessionFormProps {
@@ -548,15 +549,7 @@ export const EnhancedConfessionForm: React.FC<EnhancedConfessionFormProps> = ({
             />
           </div>
 
-          {submitError && (
-            <div
-              className="rounded-xl border border-red-500/25 bg-red-950/30 px-4 py-3"
-              role="alert"
-              aria-live="assertive"
-            >
-              <p className="text-sm text-red-200">{submitError}</p>
-            </div>
-          )}
+          <InlineError message={submitError} />
 
           {submitSuccess && (
             <div

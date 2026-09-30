@@ -12,6 +12,7 @@ import { useAuth } from '@/app/lib/hooks/useAuth';
 import { getErrorMessage, extractRequestId } from '@/app/lib/utils/errorHandler';
 import { getAuthFieldError } from '@/app/lib/api/authService';
 import { RequestIdNotice } from '@/app/components/auth/RequestIdNotice';
+import { InlineError } from '@/app/components/common/InlineError';
 import {
   validateRegisterForm,
   parseRegisterForm,
@@ -149,14 +150,7 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            {submitError && (
-              <div
-                className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200"
-                role="alert"
-              >
-                {submitError}
-              </div>
-            )}
+            <InlineError message={submitError} className="mt-5" />
 
             {errorRequestId && (submitError || hasErrors(errors)) && (
               <RequestIdNotice requestId={errorRequestId} />
