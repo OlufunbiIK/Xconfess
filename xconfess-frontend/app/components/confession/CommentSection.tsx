@@ -9,6 +9,7 @@ import {
   useCreateCommentMutation,
 } from "@/app/lib/hooks/useComments";
 import { type Comment } from "@/app/lib/types/confession";
+import { InlineError } from "@/app/components/common/InlineError";
 
 interface CommentSectionProps {
   confessionId: string;
@@ -190,11 +191,7 @@ export function CommentSection({
           </Button>
         </div>
 
-        {submitError && (
-          <p className="mt-2 text-sm text-red-400" role="alert">
-            {submitError}
-          </p>
-        )}
+        <InlineError message={submitError} className="mt-2" />
       </form>
 
       {loading && comments.length === 0 && (

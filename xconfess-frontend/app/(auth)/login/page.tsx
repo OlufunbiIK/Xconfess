@@ -10,6 +10,7 @@ import { useAuth } from '@/app/lib/hooks/useAuth';
 import { isSafeAuthRedirect } from '@/app/lib/utils/auth-redirect';
 import { extractRequestId } from '@/app/lib/utils/errorHandler';
 import { RequestIdNotice } from '@/app/components/auth/RequestIdNotice';
+import { InlineError } from '@/app/components/common/InlineError';
 import {
   validateLoginForm,
   parseLoginForm,
