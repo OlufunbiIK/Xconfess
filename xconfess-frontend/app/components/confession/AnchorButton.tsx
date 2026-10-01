@@ -264,9 +264,9 @@ export const AnchorButton: FC<AnchorButtonProps> = ({
         {liveMessage}
       </span>
       {isEmbeddedWallet && (
-        <label className="block text-xs text-[var(--secondary)]">
+        <label htmlFor="anchor-wallet-pin" className="block text-xs text-[var(--secondary)]">
           Wallet PIN
-          <input type="password" inputMode="numeric" value={walletPin} onChange={(event) => setWalletPin(event.target.value)} placeholder="Required to sign locally" aria-label="Wallet PIN for Stellar proof" className={cn("mt-1 h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm text-[var(--foreground)]", focusVisible)} />
+          <input id="anchor-wallet-pin" type="password" inputMode="numeric" value={walletPin} onChange={(event) => setWalletPin(event.target.value)} placeholder="Required to sign locally" className={cn("mt-1 h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm text-[var(--foreground)]", focusVisible)} />
         </label>
       )}
       <Button

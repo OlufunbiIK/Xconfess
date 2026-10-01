@@ -10,6 +10,7 @@ import { useAuth } from '@/app/lib/hooks/useAuth';
 import { isSafeAuthRedirect } from '@/app/lib/utils/auth-redirect';
 import { extractRequestId } from '@/app/lib/utils/errorHandler';
 import { RequestIdNotice } from '@/app/components/auth/RequestIdNotice';
+import { InlineError } from '@/app/components/common/InlineError';
 import {
   validateLoginForm,
   parseLoginForm,
@@ -113,13 +114,21 @@ export default function LoginPage() {
             </div>
 
             {errors.email && (
-              <div className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200">
+              <div
+                id="login-email-error"
+                role="alert"
+                className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200"
+              >
                 {errors.email}
               </div>
             )}
 
             {errors.password && !errors.email && (
-              <div className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200">
+              <div
+                id="login-password-error"
+                role="alert"
+                className="mt-5 rounded-xl border border-red-500/25 bg-red-950/30 p-3 text-sm text-red-200"
+              >
                 {errors.password}
               </div>
             )}
@@ -148,6 +157,9 @@ export default function LoginPage() {
                   }}
                   placeholder="you@example.com"
                   autoComplete="email"
+                  error={Boolean(errors.email)}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? 'login-email-error' : undefined}
                 />
               </div>
 
@@ -170,6 +182,9 @@ export default function LoginPage() {
                   }}
                   placeholder="Enter your password"
                   autoComplete="current-password"
+                  error={Boolean(errors.password)}
+                  aria-invalid={Boolean(errors.password)}
+                  aria-describedby={errors.password && !errors.email ? 'login-password-error' : undefined}
                 />
               </div>
 

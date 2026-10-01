@@ -93,7 +93,11 @@ export default function ForgotPasswordPage() {
             )}
 
             {errors.email && (
-              <div className="mt-5 rounded-[20px] border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <div
+                id="forgot-email-error"
+                role="alert"
+                className="mt-5 rounded-[20px] border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              >
                 {errors.email}
               </div>
             )}
@@ -118,6 +122,9 @@ export default function ForgotPasswordPage() {
                   }}
                   placeholder="you@example.com"
                   autoComplete="email"
+                  error={Boolean(errors.email)}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? 'forgot-email-error' : undefined}
                 />
               </div>
 
