@@ -54,6 +54,8 @@ import { mapToSlimConfession } from './utils/confession-mapper';
 import { AnomalyDetectionService } from '../anomaly/anomaly-detection.service';
 import { ConfessionIdempotencyService } from './confession-idempotency.service';
 import { AnalyticsEventService } from '../analytics/analytics-event.service';
+import { OperationalMetricsService } from '../observability/operational-metrics.service';
+import { FeedTypeLabel } from '../observability/metric-labels';
 
 @Injectable()
 export class ConfessionService {
@@ -76,7 +78,22 @@ export class ConfessionService {
     private readonly dataSource: DataSource,
     @Optional()
     private readonly analyticsEventService?: AnalyticsEventService,
+    @Optional()
+    private readonly operationalMetrics?: OperationalMetricsService,
   ) {}
+
+  /**
+   * Time a feed/search query under a fixed, privacy-safe feed type label.
+   * Falls back to running the query untouched when metrics are unavailable.
+   */
+  private observeFeed<T>(
+    feedType: FeedTypeLabel,
+    run: () => Promise<T>,
+  ): Promise<T> {
+    return this.operationalMetrics
+      ? this.operationalMetrics.observeFeedQuery(feedType, run)
+      : run();
+  }
 
   private get aesKey(): string {
     return this.configService.get<string>('app.confessionAesKey', '');
@@ -365,6 +382,10 @@ export class ConfessionService {
   }
 
   async getConfessions(dto: GetConfessionsDto) {
+    return this.observeFeed('public', () => this.loadConfessionsFeed(dto));
+  }
+
+  private async loadConfessionsFeed(dto: GetConfessionsDto) {
     const limit = dto.limit ?? 10;
     const sort = dto.sort || SortOrder.NEWEST;
 
@@ -646,6 +667,10 @@ export class ConfessionService {
   }
 
   async search(dto: SearchConfessionDto) {
+    return this.observeFeed('search', () => this.runSearch(dto));
+  }
+
+  private async runSearch(dto: SearchConfessionDto) {
     if (!dto.q.trim())
       throw new BadRequestException('Search term cannot be empty');
     const limit =
@@ -692,6 +717,12 @@ export class ConfessionService {
   }
 
   async fullTextSearch(dto: SearchConfessionDto) {
+    return this.observeFeed('fulltext_search', () =>
+      this.runFullTextSearch(dto),
+    );
+  }
+
+  private async runFullTextSearch(dto: SearchConfessionDto) {
     if (!dto.q.trim())
       throw new BadRequestException('Search term cannot be empty');
     const limit =
@@ -827,6 +858,12 @@ export class ConfessionService {
   }
 
   async getTrendingConfessions(window: string = '24h') {
+    return this.observeFeed('trending', () =>
+      this.loadTrendingConfessions(window),
+    );
+  }
+
+  private async loadTrendingConfessions(window: string) {
     let days: number;
     switch (window) {
       case '7d':
@@ -1350,6 +1387,15 @@ export class ConfessionService {
    * Get confessions filtered by tag with pagination
    */
   async getConfessionsByTag(tagName: string, dto: GetConfessionsByTagDto) {
+    return this.observeFeed('tag', () =>
+      this.loadConfessionsByTag(tagName, dto),
+    );
+  }
+
+  private async loadConfessionsByTag(
+    tagName: string,
+    dto: GetConfessionsByTagDto,
+  ) {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
