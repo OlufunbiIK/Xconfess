@@ -36,7 +36,7 @@ cp xconfess-frontend/.env.example xconfess-frontend/.env.local
 ```
 
 The example files are intentionally safe for local development. Do not commit
-.env` or .env.local`, and do not paste private keys, tokens, passwords, or
+.env` or `.env.local`, and do not paste private keys, tokens, passwords, or
 production credentials into issues, pull requests, screenshots, or logs.
 
 For a faster local UI workflow, you may add this value to
@@ -63,12 +63,23 @@ npm run dev:frontend
 
 Default local URLs:
 
-- Frontend: `http://localhost:3000`
+- Frontend: http://localhost:3000
 - Backend API: `http://localhost:5000`
 - Live health check: `http://localhost:5000/api/health/live`
 - Readiness health check: `http://localhost:5000/api/health/ready`
 - Postgres: `localhost:55432`
 - Redis: `localhost:6379`
+
+## Stellar Testnet Development
+
+Stellar and Soroban features are optional for local development. If your work
+involves the embedded wallet, payments, or contracts, follow the dedicated
+guide:
+
+- [Stellar Testnet Development Guide](STELLAR_TESTNET_DEVELOPMENT.md)
+
+It covers required configuration, testnet wallet prerequisites, safe key
+handling, and how to disable Stellar features for normal local development.
 
 ## Branch Naming
 
@@ -283,7 +294,7 @@ issue:
 
 ```md
 Closes #1118
-```
+[```
 
 Replace `1118` with the actual issue number you are solving. Do not omit the
 closing keyword when the PR resolves an issue.
